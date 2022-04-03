@@ -1,0 +1,149 @@
+$.fn.sircloAddCart = function (callback) {
+    var postData = $(this).serialize();
+    var apiUrl = '/cart?return=/cart?format=json';
+    var delay = 0;
+    if (window.isFakeView) {
+        var quantity = $(this).find('input[name=quantity]').val();
+        apiUrl = '/hidden/view_test/Store_CartJson/testSuccess/exec';
+        if (quantity >= 100) {
+            apiUrl = '/hidden/view_test/Store_CartJson/testError/exec';
+        }
+        delay = 2000;
+    }
+
+    $('form#csrf-form input[type=hidden]').each(function() {
+      name = $(this).attr('name')
+      value = $(this).attr('value')
+      postData[name] = value
+    })
+
+    $.post(apiUrl, postData, function (data) {
+        setTimeout(function () {
+            callback(data);
+        }, delay);
+    });
+};
+$.sircloGetCart = function (callback) {
+    var apiUrl = '/cart?format=json';
+    if (window.isFakeView) {
+        apiUrl = '/hidden/view_test/Store_CartJson/testNormal/exec';
+    }
+    $.get(apiUrl, function (data) {
+        callback(data);
+    });
+};
+$.fn.sircloEditCart = function (cmd, callback) {
+    //var postData = $(this).serialize();
+    var postData = {};
+    var lgxArea = $("#input_lgx_area").val();
+    switch (cmd) {
+      case 'payment_method': postData['payment_method'] = $(this).val(); break;
+      case 'insurance'     : postData['shipping_value'] = $(this).attr('checked'); break;
+      default              : postData['shipping_value'] = $(this).val(); break;
+    }
+    if (cmd) {
+        if (cmd.indexOf('gojek') > -1) {
+            var gojekData = cmd.split(',');
+            postData['latitude'] = gojekData[1];
+            postData['longitude'] = gojekData[2];
+            postData['shipping_value'] = gojekData[0];
+            cmd = gojekData[0];
+        }
+    }
+    postData['cmd'] = cmd;
+    postData['lgx_area'] = lgxArea;
+    var apiUrl = '/cart?return=/cart?format=json';
+    var delay = 0;
+    if (window.isFakeView) {
+        apiUrl = '/hidden/view_test/Store_CartJson/testEditCart/exec';
+        if (!shipping_val) {
+            apiUrl = '/hidden/view_test/Store_CartJson/testNormal/exec';
+        }
+        delay = 1000;
+    }
+
+    $('form#csrf-form input[type=hidden]').each(function() {
+      name = $(this).attr('name')
+      value = $(this).attr('value')
+      postData[name] = value
+    })
+    setTimeout(function () {
+        $.post(apiUrl, postData, function (data) {
+            callback(data);
+        });
+    }, delay);
+};
+$.fn.sircloEditCartCoupon = function (couponCode, callback) {
+    var lgxArea = $("#input_lgx_area").val();
+    var postData = { 'cmd': 'coupon', 'coupon_code': couponCode, lgx_area: lgxArea};
+    var apiUrl = '/cart?return=/cart?format=json';
+    var delay = 0;
+    if (window.isFakeView) {
+        apiUrl = '/hidden/view_test/Store_CartJson/testEditCart/exec';
+        // apiUrl = '/hidden/view_test/Store_CartJson/testNormal/exec'; // Either above line or this line
+        delay = 1000;
+    }
+
+    $('form#csrf-form input[type=hidden]').each(function() {
+      name = $(this).attr('name')
+      value = $(this).attr('value')
+      postData[name] = value
+    })
+
+    setTimeout(function () {
+        $.post(apiUrl, postData, function (data) {
+            callback(data);
+        });
+    }, delay);
+};
+
+$.fn.sircloEditCartPoints = function (npoints, callback) {
+    var postData = { 'cmd': 'points', 'npoints': npoints};
+    var apiUrl = '/cart?return=/cart?format=json';
+    var delay = 0;
+    if (window.isFakeView) {
+        apiUrl = '/hidden/view_test/Store_CartJson/testEditCart/exec';
+        // apiUrl = '/hidden/view_test/Store_CartJson/testNormal/exec'; // Either above line or this line
+        delay = 1000;
+    }
+
+    $('form#csrf-form input[type=hidden]').each(function() {
+      name = $(this).attr('name')
+      value = $(this).attr('value')
+      postData[name] = value
+    })
+
+    setTimeout(function () {
+        $.post(apiUrl, postData, function (data) {
+            callback(data);
+        });
+    }, delay);
+};
+
+$.fn.sircloGetGosendPrice = function(callback){
+    var postData = {};
+
+    postData['shipping_value'] = 'gojek';
+    postData['latitude'] = $('.gllpLatlonPicker').children('.gllpLatitude').val();
+    postData['longitude'] = $('.gllpLatlonPicker').children('.gllpLongitude').val();
+    postData['cmd'] = 'gojek';
+    var apiUrl = '/cart?return=/cart?format=json';
+    var delay = 0;
+    if (window.isFakeView) {
+        apiUrl = '/hidden/view_test/Store_CartJson/testEditCart/exec';
+        if (!shipping_val) {
+            apiUrl = '/hidden/view_test/Store_CartJson/testNormal/exec';
+        }
+        delay = 1000;
+    }
+    $('form#csrf-form input[type=hidden]').each(function() {
+        name = $(this).attr('name')
+        value = $(this).attr('value')
+        postData[name] = value
+    })
+    setTimeout(function () {
+        $.post(apiUrl, postData, function (data) {
+            callback(data);
+        });
+    }, delay);
+}

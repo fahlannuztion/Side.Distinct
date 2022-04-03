@@ -1,0 +1,227 @@
+$.fn.sircloAreaAutocomplete = function (options) {
+    var sircloAreaGetAreas = function (input, formRoot) {
+        var country = $(formRoot).find('[data-area-autocomplete="country"]').val();
+        if (window.sircloAreas == undefined) return;
+        var dbAreas = window.sircloAreas.ID;
+        var states = dbAreas;
+        var areas = [];
+        var field = $(input).attr('data-area-autocomplete');
+        if (country == "ID") {
+            if (field == "state") {
+                // return all provinces provider data
+                areas = states.map(function (data) {
+                    return data['provider_data'];
+                });
+            } else if (field == 'city') {
+                // return all districts provider data (skipping city) from selected states
+                var activeState = $(formRoot).find('[data-area-autocomplete="state"]').val();
+                var cityDistricts = new Array();
+                dbAreas.forEach(function (state) {
+                    if (state.provider_data == activeState) {
+                        state.cities.forEach(function (city) {
+                            city.districts.forEach(function (district) {
+                                cityDistricts.push(district.provider_data);
+                            });
+                        });
+                    }
+                });
+
+                areas = cityDistricts;
+                if(!areas.length) return false;
+            }
+        }
+        return areas;
+    }
+    var sircloAreaFilterGenerate = function (input, formRoot) {
+        var filter = function (request, responseCallback) {
+            areas = sircloAreaGetAreas(input, formRoot);
+            var matcher = new RegExp("(^|-)" + $.ui.autocomplete.escapeRegex(request.term), "i");
+            var filtered = $.grep(areas, function (str, i) {
+                return matcher.test(str);
+            });
+            responseCallback(filtered);
+        };
+        return filter;
+    };
+
+    var sircloAreaChangeGenerate = function (input, formRoot, onchange) {
+        var inArray = function (val, arr) {
+            for (var x in arr) {
+                if (arr[x] == val) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        return function (event, ui) {
+            areas = sircloAreaGetAreas(input, formRoot);
+            if (areas.length && !inArray($(this).val(), areas)) {
+                $(this).val('');
+                return false;
+            }
+            if ($(this).attr('data-area-autocomplete') == "city" && !areas){
+                $(this).val('');
+                return false;
+            }
+            if (onchange) {
+                var area = $(input).attr('data-area-autocomplete');
+                if ('city' == area || 'country' == area) {
+                    area = 'shipping_' + area;
+                }
+                onchange(input, area);
+            }
+        };
+    };
+
+    /* attach autocomplete */
+    $(this).each(function () {
+        var formRoot = this;
+        $(this).find('[data-area-autocomplete]').each(function () {
+            var filter = sircloAreaFilterGenerate(this, formRoot);
+            var onchange = null;
+            if (options) {
+                onchange = options.onchange;
+            }
+
+            var change = sircloAreaChangeGenerate(this, formRoot, onchange);
+            $(this).autocomplete({
+                source: filter,
+                autoFocus: false,
+                delay: 0,
+                minLength: 0,
+                change: change,
+                _dummy: false
+            });
+            $(this).attr('autocomplete','my-field-name1');
+
+            if ($(this).attr('data-area-autocomplete') !== "statev2"){
+                $(this).bind('focus', function () {
+                    $(this).autocomplete('search');
+                });
+            }
+        });
+    });
+};
+
+jQuery.ui.autocomplete.prototype._resizeMenu = function () {
+    var ul = this.menu.element;
+    ul.outerWidth(this.element.outerWidth());
+}
+
+function deliverycountryv2change(){
+    var country = $("#input_delivery_country").val();
+    if (window.sircloAreas == undefined) return;
+    var dbAreas = window.sircloAreas.ID;
+
+    if (country == "ID") {
+        var dropdownState = $(".shipping-form").find(
+            '[data-area-autocomplete="deliverystatev2"]'
+        );
+        dropdownState.replaceWith(
+            '<select name="delivery_state" required id="deliverystate-dropdown" onchange="deliverystatev2change()" autocomplete="my-field-name1"><option value>-- Select State --</option></select>'
+        );
+        var dropdownCity = $(".shipping-form").find('[data-area-autocomplete="deliverycityv2"]');
+        dropdownCity.replaceWith(
+            '<select name="delivery_city" id="deliverycity-dropdown" required autocomplete="my-field-name1"><option value>-- Select City --</option></select>'
+        );
+        // return all provinces provider data
+        areas = dbAreas.map(function (data) {
+            const option = document.createElement("option");
+            option.value = data.location_code;
+            option.innerHTML = data.provider_data;
+            document.getElementById("deliverystate-dropdown").appendChild(option);
+            return data["provider_data"];
+        });
+    } else{
+        $("#deliverystate-dropdown").replaceWith(
+            '<input id="input_delivery_state" type="text" name="delivery_state" required="" data-area-autocomplete="deliverystatev2" value="" class="ui-autocomplete-input"  autocomplete="my-field-name1">'
+        );
+        $("#deliverycity-dropdown").replaceWith(
+            '<input id="input_delivery_city" type="text" name="delivery_city" required="" data-area-autocomplete="deliverycityv2" value="" class="ui-autocomplete-input"  autocomplete="my-field-name1">'
+        );
+    }
+return [];
+}
+
+function deliverystatev2change(){
+    var activeState = $('#deliverystate-dropdown option:selected').text();
+    var dbAreas = window.sircloAreas.ID;
+    var cityDropdown = document.getElementById("deliverycity-dropdown");
+
+    if (cityDropdown.hasChildNodes()) {
+        while (cityDropdown.firstChild !== cityDropdown.lastChild) {
+            cityDropdown.removeChild(cityDropdown.lastChild);
+        }
+    }
+    dbAreas.forEach(function (state) {
+        if (state.provider_data == activeState) {
+            state.cities.forEach(function (city) {
+                city.districts.forEach(function (district) {
+                    const option = document.createElement("option");
+                    option.value = district.provider_data;
+                    option.innerHTML = district.provider_data;
+                    cityDropdown.appendChild(option);
+                });
+            });
+        }
+    });
+}
+
+function countryv2change(){
+        var country = $("#input_country").val();
+        if (window.sircloAreas == undefined) return;
+        var dbAreas = window.sircloAreas.ID;
+
+        if (country == "ID") {
+            var dropdownState = $(".shipping-form").find(
+                '[data-area-autocomplete="statev2"]'
+            );
+            dropdownState.replaceWith(
+                '<select name="state" required id="state-dropdown" onchange="statev2change()"  autocomplete="my-field-name1"><option value>-- Select State --</option></select>'
+            );
+            var dropdownCity = $(".shipping-form").find('[data-area-autocomplete="cityv2"]');
+            dropdownCity.replaceWith(
+                '<select name="city" id="city-dropdown" required  autocomplete="my-field-name1"><option value>-- Select City --</option></select>'
+            );
+            // return all provinces provider data
+            areas = dbAreas.map(function (data) {
+                const option = document.createElement("option");
+                option.value = data.location_code;
+                option.innerHTML = data.provider_data;
+                document.getElementById("state-dropdown").appendChild(option);
+                return data["provider_data"];
+            });
+        } else{
+            $("#state-dropdown").replaceWith(
+                '<input id="input_state" type="text" name="state" required="" data-area-autocomplete="statev2" value="" class="ui-autocomplete-input" autocomplete="my-field-name1">'
+            );
+            $("#city-dropdown").replaceWith(
+                '<input id="input_city" type="text" name="city" required="" data-area-autocomplete="cityv2" value="" class="ui-autocomplete-input" autocomplete="my-field-name1">'
+            );
+        }
+    return [];
+}
+
+function statev2change(){
+    var activeState = $('#state-dropdown option:selected').text();
+    var dbAreas = window.sircloAreas.ID;
+    var cityDropdown = document.getElementById("city-dropdown");
+
+    if (cityDropdown.hasChildNodes()) {
+        while (cityDropdown.firstChild !== cityDropdown.lastChild) {
+            cityDropdown.removeChild(cityDropdown.lastChild);
+        }
+    }
+    dbAreas.forEach(function (state) {
+        if (state.provider_data == activeState) {
+            state.cities.forEach(function (city) {
+                city.districts.forEach(function (district) {
+                    const option = document.createElement("option");
+                    option.value = district.provider_data;
+                    option.innerHTML = district.provider_data;
+                    cityDropdown.appendChild(option);
+                });
+            });
+        }
+    });
+}

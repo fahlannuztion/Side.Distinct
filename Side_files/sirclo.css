@@ -1,0 +1,43 @@
+/* FORM 
+  ======= */
+
+.sirclo-form .sirclo-form-row { margin-bottom:10px; }
+.sirclo-form .sirclo-form-label { width:150px; float:left; text-align:left; padding-top:5px; }
+.sirclo-form .sirclo-form-input { margin-left:170px; }
+.sirclo-form .required { color:orange; }
+.sirclo-form .notice {font-size:10px;}
+.sirclo-form select, .sirclo-form textarea, .sirclo-form input[type="text"], .sirclo-form input[type="password"], .sirclo-form input[type="datetime"], .sirclo-form input[type="datetime-local"], .sirclo-form input[type="date"], .sirclo-form input[type="month"], .sirclo-form input[type="time"], .sirclo-form input[type="week"], .sirclo-form input[type="number"], .sirclo-form input[type="email"], .sirclo-form input[type="url"], .sirclo-form input[type="search"], .sirclo-form input[type="tel"], .sirclo-form input[type="color"], .sirclo-form .uneditable-input { margin-bottom:0px; }
+.sirclo-form label.error {font-size:11px; color:red;}
+.sirclo-form input.error, .sirclo-form textarea.error {border:1px solid red;}
+.sirclo-form-input { position: relative;}
+
+#form-row-payment_method .sirclo-form-input.radio { margin-left:0px; padding-left:0px; }
+#form-row-shipping_value .sirclo-form-input.radio { margin-left:0px; padding-left:0px; }
+#form-row-agreement .sirclo-form-input { margin-left:0px; margin-top:20px; }
+#form-row-is_set_delivery .sirclo-form-input { margin-left:0px; }
+
+/* jQuery AUTO COMPLETE
+    =================== */
+.ui-autocomplete { max-height: 240px; overflow-y: auto; z-index: 1051; }
+.password-hint-list {
+  padding: 1rem;
+}
+
+.password-hint-item {
+  display: flex;
+  color: #444444;
+  font-size: 1rem;
+}
+
+.password-hint-item p {
+  margin-left: 0.5rem;
+  text-align: left;
+}
+
+ul.password-hint-list li.password-hint-item:not(:last-child) {
+  margin-bottom: 0.2rem;
+}
+
+path.fulfilled {
+  fill: #00B969
+}
